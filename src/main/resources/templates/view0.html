@@ -44,7 +44,6 @@
           <td>
             <input
               type="number"
-              min="0"
               step="0.01"
               data-th-field="*{amount}"
               required
@@ -68,9 +67,9 @@
           </td>
         </tr>
       </table>
-      <div class="error" data-th-if="${#fields.hasErrors('global')}">
+      <div class="error" data-th-if="${#fields.hasAnyErrors()}">
         <p
-          data-th-each="err: ${#fields.errors('global')}"
+          data-th-each="err : ${#fields.allErrors()}"
           data-th-text="${err}"
         ></p>
       </div>
