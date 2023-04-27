@@ -1,6 +1,8 @@
 package sg.edu.nus.iss.fundtransferapp.controller;
 
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -13,15 +15,20 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import sg.edu.nus.iss.fundtransferapp.exceptions.TransferNotSuccessfulException;
 import sg.edu.nus.iss.fundtransferapp.models.Account;
 import sg.edu.nus.iss.fundtransferapp.models.Transfer;
-import sg.edu.nus.iss.fundtransferapp.services.AppService;
+import sg.edu.nus.iss.fundtransferapp.services.FundTransferService;
+import sg.edu.nus.iss.fundtransferapp.services.LogAuditService;
 
 @Controller
 public class FundTransferController {
     
     @Autowired
-    AppService appService;
+    FundTransferService appService;
+
+    @Autowired
+    LogAuditService logAuditService;
 
     @GetMapping(path="/", produces="text/html")
     public String renderViewZero(Model model, HttpSession session) {
@@ -37,6 +44,7 @@ public class FundTransferController {
 
         String fromAccountId = transfer.getFromAccountId();
         String toAccountId = transfer.getToAccountId();
+        Double amount = transfer.getAmount();
         List<Account> accounts = (List<Account>) session.getAttribute("accounts");
         model.addAttribute("accounts", accounts);
 
@@ -61,8 +69,8 @@ public class FundTransferController {
         // C3, C4 are syntactic validation handled by @Min annotation in models
 
         // C5
-        if (!appService.isBalanceSufficient(fromAccountId, transfer.getAmount())) {
-            ObjectError err = new ObjectError("globalError", "Source account id %s has insufficient funds.".formatted(toAccountId));
+        if (!appService.isBalanceSufficient(fromAccountId, amount)) {
+            ObjectError err = new ObjectError("globalError", "Source account id %s has insufficient funds.".formatted(fromAccountId));
             bindingResult.addError(err);
         }
 
@@ -70,6 +78,19 @@ public class FundTransferController {
             return "view0";
         }
 
-        return "";
+        try {
+            appService.transferFunds(fromAccountId, toAccountId, amount);
+            transfer.setDate(new Date().getTime());
+            transfer.setId(UUID.randomUUID().toString().substring(0, 8));
+            logAuditService.logTransaction(transfer);
+            model.addAttribute("transfer", transfer);
+            model.addAttribute("donor", "%s (%s)".formatted(appService.getAccountOwnerNameByAccountId(fromAccountId).get(), fromAccountId));
+            model.addAttribute("donee", "%s (%s)".formatted(appService.getAccountOwnerNameByAccountId(toAccountId).get(), toAccountId));
+            return "view1";
+        } catch (TransferNotSuccessfulException ex) {
+            ObjectError err = new ObjectError("globalError", ex.getMessage());
+            bindingResult.addError(err);
+            return "view0";
+        }
     }
 }

@@ -14,7 +14,7 @@ import sg.edu.nus.iss.fundtransferapp.models.Account;
 import static sg.edu.nus.iss.fundtransferapp.repository.DBQueries.*;
 
 @Repository
-public class AppRepository {
+public class AccountsRepository {
     
     @Autowired
     JdbcTemplate jdbcTemplate;
@@ -35,5 +35,13 @@ public class AppRepository {
             return Optional.of(acc);
         }
         return Optional.empty();
+    }
+
+    public boolean debitFunds(String fromAccountId, Double amount) {
+        return jdbcTemplate.update(DEBIT_ACCOUNT_BALANCE, amount, fromAccountId) == 1;
+    }
+
+    public boolean creditFunds(String toAccountId, Double amount) {
+        return jdbcTemplate.update(CREDIT_ACCOUNT_BALANCE, amount, toAccountId) == 1;
     }
 }
