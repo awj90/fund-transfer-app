@@ -11,7 +11,7 @@ public class Transfer {
      @Size(min=10, max=10, message="Please enter a 10-digit account ID.")
      private String toAccountId;
 
-     @Min(value=1, message="Transfer amount must be more than 0.")
+     @Min(value=10, message="Minimum transfer amount is 10 dollars.")
      private Double amount;  
      
      private String comments;

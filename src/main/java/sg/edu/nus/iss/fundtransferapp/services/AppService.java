@@ -26,4 +26,12 @@ public class AppService {
         }
         return true;
     }
+
+    public boolean isBalanceSufficient(String accountId, Double amount) {
+        Optional<Account> account = appRepository.getAccountById(accountId);
+        if (account.get().getBalance() >= amount) {
+            return true;
+        }
+        return false;
+    }
 }

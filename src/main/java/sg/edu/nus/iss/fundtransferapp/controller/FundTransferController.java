@@ -35,24 +35,34 @@ public class FundTransferController {
     @PostMapping(path="/transfer", produces="text/html")
     public String postTransferHandler(@ModelAttribute @Valid Transfer transfer, BindingResult bindingResult, HttpSession session, Model model) {
 
+        String fromAccountId = transfer.getFromAccountId();
+        String toAccountId = transfer.getToAccountId();
         List<Account> accounts = (List<Account>) session.getAttribute("accounts");
         model.addAttribute("accounts", accounts);
 
         // C0
-        if (!appService.isExisting(transfer.getFromAccountId())) {
-            ObjectError err = new ObjectError("globalError", "Source account %d is invalid.".formatted(transfer.getFromAccountId()));
+        if (!appService.isExisting(fromAccountId)) {
+            ObjectError err = new ObjectError("globalError", "Source account id %s is invalid.".formatted(fromAccountId));
             bindingResult.addError(err);
         }
-        if (!appService.isExisting(transfer.getToAccountId())) {
-            ObjectError err = new ObjectError("globalError", "Destination account %d is invalid.".formatted(transfer.getToAccountId()));
+        if (!appService.isExisting(toAccountId)) {
+            ObjectError err = new ObjectError("globalError", "Destination account id %s is invalid.".formatted(toAccountId));
             bindingResult.addError(err);
         }
 
         // C1 is syntactic validation handled by @Size annotation in models
 
         // C2
-        if (transfer.getFromAccountId().equals(transfer.getToAccountId())) {
+        if (fromAccountId.equals(toAccountId)) {
             ObjectError err = new ObjectError("globalError", "Source account and destination account cannot be same.");
+            bindingResult.addError(err);
+        }
+
+        // C3, C4 are syntactic validation handled by @Min annotation in models
+
+        // C5
+        if (!appService.isBalanceSufficient(fromAccountId, transfer.getAmount())) {
+            ObjectError err = new ObjectError("globalError", "Source account id %s has insufficient funds.".formatted(toAccountId));
             bindingResult.addError(err);
         }
 
