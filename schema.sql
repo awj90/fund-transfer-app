@@ -3,7 +3,7 @@ create database acme_bank;
 use acme_bank;
 
 create table accounts (
-    account_id VARCHAR(10) NOT NULL,
+    account_id CHAR(10) NOT NULL,
     name VARCHAR(50) NOT NULL,
     balance DECIMAL(10, 2) NOT NULL,
     PRIMARY KEY(account_id)
