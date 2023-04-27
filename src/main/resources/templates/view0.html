@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>View 0 (Landing Page)</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <h1>Funds Transfer</h1>
+    <form
+      method="POST"
+      data-th-action="@{/transfer}"
+      data-th-object="${transfer}"
+    >
+      <table>
+        <tr>
+          <td>From account:</td>
+          <td>
+            <select data-th-field="*{fromAccountId}">
+              <option
+                data-th-each="account : ${accounts}"
+                data-th-value="${account.accountId}"
+                data-th-text="${account.name} + ' (' + ${account.accountId} + ')'"
+              ></option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>To account:</td>
+          <td>
+            <select data-th-field="*{toAccountId}">
+              <option
+                data-th-each="account : ${accounts}"
+                data-th-value="${account.accountId}"
+                data-th-text="${account.name} + ' (' + ${account.accountId} + ')'"
+              ></option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Amount:</td>
+          <td>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              data-th-field="*{amount}"
+              required
+            />
+          </td>
+        </tr>
+        <tr>
+          <td>Comments:</td>
+          <td>
+            <textarea
+              type="text"
+              placeholder="Type here"
+              data-th-field="*{comments}"
+            ></textarea>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <button type="submit">Transfer</button>
+          </td>
+        </tr>
+      </table>
+      <div class="error" data-th-if="${#fields.hasErrors('global')}">
+        <p
+          data-th-each="err: ${#fields.errors('global')}"
+          data-th-text="${err}"
+        ></p>
+      </div>
+    </form>
+  </body>
+</html>
